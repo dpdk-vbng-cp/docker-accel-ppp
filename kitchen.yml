@@ -1,0 +1,22 @@
+---
+driver:
+  name: vagrant
+  synced_folders:
+    - ["./", "/opt/docker-accel-ppp"]
+
+provisioner:
+  name: shell
+
+verifier:
+  name: inspec
+
+platforms:
+  - name: ubuntu-18.04
+
+suites:
+  - name: default
+    run_list:
+    verifier:
+      inspec_tests:
+        - test/integration/default
+    attributes:
