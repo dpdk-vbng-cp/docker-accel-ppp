@@ -24,7 +24,7 @@ We use [test-kitchen](https://kitchen.ci/) with the vagrant driver
 containers. Please make sure [vagrant](https://www.vagrantup.com/) is installed
 and runs properly.
 
-Install bundler `gem install bundler` and install the bundle from the Gemfile
+Install bundler `gem install bundler -v '1.17.3'` and install the bundle from the Gemfile
 with `bundle install`.
 
 Now you are ready to test the containers with kitchen:
