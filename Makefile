@@ -1,6 +1,7 @@
 .PHONY: all build build-accel-ppp-drivers run run-accel-ppp-drivers run-accel-pppd clean
 
-KERNEL_VERSION=$(shell uname -r)
+KERNEL_VERSION?=$(shell uname -r)
+UBUNTU_VERSION?=18.04
 
 all: build
 build: build-accel-ppp-drivers build-accel-pppd
@@ -8,6 +9,7 @@ build: build-accel-ppp-drivers build-accel-pppd
 build-accel-ppp-drivers:
 	docker build \
 		--build-arg KERNEL_VERSION=$(KERNEL_VERSION) \
+		--build-arg UBUNTU_VERSION=$(UBUNTU_VERSION) \
 		-t accel-ppp-drivers \
 		./accel-ppp-drivers/ubuntu/
 
