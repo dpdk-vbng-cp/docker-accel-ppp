@@ -4,7 +4,7 @@ ENV LINUX_HEADERS_VERSION 4.9.0-9
 
 RUN set -x \
     && apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates git build-essential cmake pkg-config libnl-3-dev libnl-utils libssl-dev libpcre3-dev libsnmp-dev libnet-snmp-perl libtritonus-bin lua5.1 liblua5.1-0-dev snmp libhiredis-dev libjson-c-dev ppp pppoe
+    && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates git build-essential cmake pkg-config libnl-3-dev libnl-utils libssl-dev libpcre3-dev libsnmp-dev libnet-snmp-perl libtritonus-bin lua5.1 liblua5.1-0-dev snmp libhiredis-dev libjson-c-dev ppp pppoe iproute2
 
 RUN set -x \
     && build_dir="/opt/accel-ppp" \
@@ -18,6 +18,8 @@ RUN set -x \
     && make install
 
 COPY etc /etc/
+COPY docker-entrypoint.sh /usr/local/bin/
 
 EXPOSE 2000-2001/tcp
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["accel-pppd", "-c", "/etc/accel-ppp.conf"]
