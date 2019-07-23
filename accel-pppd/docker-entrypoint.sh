@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-OUTER_TAG=${S_TAG:-0}
+OUTER_TAG=${OUTER_TAG_TAG:-700}
 INNER_TAGS="$(echo {0..4094})"
 IFACE=${IFACE:-eth0}
 CORES="$(grep -c ^processor /proc/cpuinfo)"
@@ -11,7 +11,7 @@ create_vlan_interface () {
     tag=$2
     proto=${3:-802.1Q}
     vlan_iface=$iface.$tag
-    ip link add link $iface $vlan_iface type vlan proto proto id $tag
+    ip link add link $iface $vlan_iface type vlan proto $proto id $tag
     ip link set $vlan_iface up
     echo "$vlan_iface"
 }
