@@ -1,0 +1,31 @@
+version: '3'
+services:
+  accel-ppp-drivers:
+    build:
+        context: ./accel-ppp-drivers/ubuntu/
+        args:
+            - KERNEL_VERSION=$KERNEL_VERSION
+            - UBUNTU_VERSION=$UBUNTU_VERSION
+    volumes:
+      - /sbin/modprobe:/sbin/modprobe
+      - /sbin/depmod:/sbin/depmod
+      - /lib/modules/$KERNEL_VERSION:/lib/modules/$KERNEL_VERSION
+      - /etc/modules-load.d/:/etc/modules-load.d
+    cap_add:
+      - SYS_MODULE
+  accel-pppd:
+    depends_on:
+        - accel-ppp-drivers
+    build: ./accel-pppd/
+    devices:
+      - /dev/ppp:/dev/ppp
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - 2000-2001:2000-2001
+    environment:
+      - IFACE=eth0
+      - OUTER_PROTO=802.1Q
+      - OUTER_TAG=700
+      - INNER_PROTO=802.1Q
+      - INNER_TAGS=45 46
