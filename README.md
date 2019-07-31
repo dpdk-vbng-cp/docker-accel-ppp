@@ -10,13 +10,43 @@ The Makefile defines targets for building and running the containers:
 
 ```
 make build
-make run
+make start
+```
+
+or equivalently:
+
+```
+make
+```
+
+You can also separately build the images and start the containers:
+
+```
+build-accel-ppp-drivers
+start-accel-ppp-drivers
+```
+
+and
+
+```
+build-accel-pppd
+start-accel-pppd
 ```
 
 Please note that we currently only support ubuntu host machines. The
 `KERNEL_VERSION` of the host system can be specified to build the kernel
 modules for certain kernel versions. By default the kernel version is read by
 `uname -r`.
+
+## Setting VLAN tags
+The accel-ppp container is able to create VLAN interfaces before it starts
+accel-ppp. The VLAN tags can be configured in the `environment` section of
+`accel-pppd` in the `docker-compose.yml`. A single outer tag can be specified
+as well as a list of inner tags. If no inner tags are specified the entrypoint
+script of accel-ppp will create interfaces for all VLANs 1-4094. If outer tag
+is 0 the script creates VLAN interfaces, that are not stacked. The proto can be
+either 802.1ad (S-tag) or 802.1Q (C-tag).
+
 
 ## Test
 We use [test-kitchen](https://kitchen.ci/) with the vagrant driver
