@@ -1,50 +1,30 @@
-.PHONY: all build build-accel-ppp-drivers run run-accel-ppp-drivers run-accel-pppd clean
+.PHONY: all build build-accel-ppp-drivers build-accel-pppd start start-accel-ppp-drivers start-accel-pppd clean
 
 KERNEL_VERSION?=$(shell uname -r)
 UBUNTU_VERSION?=18.04
 
-all: build
-build: build-accel-ppp-drivers build-accel-pppd
+all: build start
+
+build:
+	KERNEL_VERSION=$(KERNEL_VERSION) UBUNTU_VERSION=$(UBUNTU_VERSION) docker-compose build
 
 build-accel-ppp-drivers:
-	docker build \
-		--build-arg KERNEL_VERSION=$(KERNEL_VERSION) \
-		--build-arg UBUNTU_VERSION=$(UBUNTU_VERSION) \
-		-t accel-ppp-drivers \
-		./accel-ppp-drivers/ubuntu/
+	KERNEL_VERSION=$(KERNEL_VERSION) UBUNTU_VERSION=$(UBUNTU_VERSION) docker-compose build accel-ppp-drivers
 
 build-accel-pppd:
-	docker build \
-		-t accel-pppd \
-		./accel-pppd/
+	docker-compose build accel-pppd
 
-run: run-accel-ppp-drivers run-accel-pppd
+start:
+	KERNEL_VERSION=$(KERNEL_VERSION) UBUNTU_VERSION=$(UBUNTU_VERSION) docker-compose up -d
 
-run-accel-ppp-drivers:
-	docker run \
-		--cap-add=SYS_MODULE \
-		-v /sbin/modprobe:/sbin/modprobe \
-		-v /sbin/depmod:/sbin/depmod \
-		-v /lib/modules/$(KERNEL_VERSION):/lib/modules/$(KERNEL_VERSION) \
-		-v /etc/modules-load.d/:/etc/modules-load.d \
-		--name accel-ppp-drivers \
-		-ti \
-		accel-ppp-drivers
+start-accel-ppp-drivers:
+	KERNEL_VERSION=$(KERNEL_VERSION) UBUNTU_VERSION=$(UBUNTU_VERSION) docker-compose start accel-ppp-drivers
 
-run-accel-pppd:
-	docker run \
-		--cap-add=NET_ADMIN \
-		--cap-add=ALL \
-		--privileged \
-		--device /dev/ppp:/dev/ppp \
-		-p 2000-2001:2000-2001 \
-		-v /sbin/lsmod:/sbin/lsmod \
-		--name accel-pppd \
-		-d \
-		accel-pppd
+start-accel-pppd:
+	docker-compose start accel-pppd
 
 clean:
-	docker kill accel-ppp-drivers accel-pppd || true
-	docker rm accel-ppp-drivers accel-pppd
+	KERNEL_VERSION=$(KERNEL_VERSION) UBUNTU_VERSION=$(UBUNTU_VERSION) docker-compose kill || true
+	KERNEL_VERSION=$(KERNEL_VERSION) UBUNTU_VERSION=$(UBUNTU_VERSION) docker-compose rm -f || true
 	sudo rmmod ipoe vlan_mon || true
 	sudo rm -f /lib/modules/4.18.0-20-generic/extra/ipoe.ko /lib/modules/4.18.0-20-generic/extra/vlan_mon.ko /etc/modules-load.d/accel-ppp.conf

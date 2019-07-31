@@ -1,36 +1,42 @@
 #!/bin/bash
 set -e
 
-S_TAG=${S_TAG:-0}
-C_TAGS="$(echo {0..4094})"
+OUTER_PROTO=${OUTER_PROTO:-802.1ad}
+OUTER_TAG=${OUTER_TAG:-0}
+INNER_PROTO=${INNER_PROTO:-802.1Q}
+INNER_TAGS=${INNER_TAGS:-$(echo {0..4094})}
 IFACE=${IFACE:-eth0}
 CORES="$(grep -c ^processor /proc/cpuinfo)"
 
-create_s_tag () {
+create_vlan_interface () {
     iface=$1
-    s_tag=$2
-    s_iface=$iface.$s_tag
-    ip link add link $iface $s_iface type vlan proto 802.1ad id $s_tag
-    ip link set $s_iface up
-    echo "$s_iface"
+    tag=$2
+    proto=$3
+    vlan_iface=$iface.$tag
+    ip link add link $iface $vlan_iface type vlan proto $proto id $tag
+    ip link set $vlan_iface up
+    echo "$vlan_iface"
 }
 
-create_c_tag () {
-    iface=$1
-    c_tag=$2
-    c_iface=$iface.$c_tag
-    ip link add link $iface $c_iface type vlan proto 802.1Q id $c_tag
-    ip l set $c_iface up
-    echo "$c_iface"
-}
+if [[ $OUTER_TAG -eq 0 ]]; then # No outer tag
+    # Only single VLAN tag, no stacking
+    OUTER_IFACE=$IFACE
+elif [[ $OUTER_TAG -gt 0 && $OUTER_TAG -lt 4095 ]]; then
+    # Create outer VLAN interface
+    OUTER_IFACE=$(create_vlan_interface $IFACE $OUTER_TAG $OUTER_PROTO)
+else
+    >&2 echo "Value $OUTER_TAG for OUTER_TAG not valid."
+    exit 1
+fi
 
-# Create interface for S-tag
-S_IFACE=$(create_s_tag $IFACE $S_TAG)
+# Create inner VLAN interfaces
+if [[ ! -z $INNER_TAGS ]]; then
+    export -f create_vlan_interface
+    export OUTER_IFACE
+    export INNER_PROTO
 
-# Create interfaces for C-tags
-export -f create_c_tag
-export S_IFACE
-printf %s\\n $C_TAGS | xargs -n 1 -P $CORES -I {} bash -c 'create_c_tag "$S_IFACE" "{}" &> /dev/null'
+    printf "$INNER_TAGS" | xargs -d " " -n 1 -P $CORES -I {} bash -c 'create_vlan_interface "$OUTER_IFACE" "{}" "$INNER_PROTO" &> /dev/null'
+fi
 
 # Run command from CMD
 exec "$@"
