@@ -1,12 +1,40 @@
 #!/bin/bash
 set -e
 
+
 OUTER_PROTO=${OUTER_PROTO:-802.1ad}
 OUTER_TAG=${OUTER_TAG:-0}
 INNER_PROTO=${INNER_PROTO:-802.1Q}
 INNER_TAGS=${INNER_TAGS:-$(echo {0..4094})}
 IFACE=${IFACE:-eth0}
 CORES="$(grep -c ^processor /proc/cpuinfo)"
+BRIDGE=${BRIDGE:-bridge0}
+KUBERNETES=${KUBERNETES:-false}
+VXLAN_ID=${VXLAN_ID:-200}
+VXLAN_IFACE=${VXLAN_IFACE:-vxlan$VXLAN_ID}
+VXLAN_LOCAL=${VXLAN_LOCAL:-172.16.248.234}
+VXLAN_REMOTE=${VXLAN_REMOTE:-172.16.248.152}
+VXLAN_DST_PORT=${VXLAN_DST_PORT:-4789}
+
+if [[ "$KUBERNETES" = true ]]; then
+    # Update config file
+    if [[ -e /etc/accel-ppp-temp.conf ]]; then
+        envsubst < /etc/accel-ppp-temp.conf > /etc/accel-ppp.conf
+    fi
+    # Create bridge interface
+    ip link add name $BRIDGE type bridge
+    ip link set $BRIDGE up
+    # Add VXLAN_LOCAL ip to IFACE
+    ip a a $VXLAN_LOCAL/24 dev $IFACE
+    # Create vxlan interface and attach to bridge
+    ip l add $VXLAN_IFACE type vxlan id $VXLAN_ID dstport $VXLAN_DST_PORT local $VXLAN_LOCAL remote $VXLAN_REMOTE
+    ip l set $VXLAN_IFACE master $BRIDGE
+    ip link set $VXLAN_IFACE up
+    ip link set $VXLAN_IFACE master $BRIDGE
+    # Attach IFACE to bridge
+    ip link set $IFACE master $BRIDGE
+fi
+
 
 create_vlan_interface () {
     iface=$1
