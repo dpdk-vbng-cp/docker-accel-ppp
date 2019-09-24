@@ -22,17 +22,17 @@ if [[ "$KUBERNETES" = true ]]; then
         envsubst < /etc/accel-ppp-temp.conf > /etc/accel-ppp.conf
     fi
     # Create bridge interface
-    ip link add name $BRIDGE type bridge
+    ip link add name $BRIDGE type bridge || true
     ip link set $BRIDGE up
     # Add VXLAN_LOCAL ip to IFACE
-    ip a a $VXLAN_LOCAL/24 dev $IFACE
+    ip a a $VXLAN_LOCAL/24 dev $IFACE || true
     # Create vxlan interface and attach to bridge
-    ip l add $VXLAN_IFACE type vxlan id $VXLAN_ID dstport $VXLAN_DST_PORT local $VXLAN_LOCAL remote $VXLAN_REMOTE
-    ip l set $VXLAN_IFACE master $BRIDGE
+    ip l add $VXLAN_IFACE type vxlan id $VXLAN_ID dstport $VXLAN_DST_PORT local $VXLAN_LOCAL remote $VXLAN_REMOTE || true
+    ip l set $VXLAN_IFACE master $BRIDGE || true
     ip link set $VXLAN_IFACE up
-    ip link set $VXLAN_IFACE master $BRIDGE
+    ip link set $VXLAN_IFACE master $BRIDGE || true
     # Attach IFACE to bridge
-    ip link set $IFACE master $BRIDGE
+    ip link set $IFACE master $BRIDGE || true
 fi
 
 
