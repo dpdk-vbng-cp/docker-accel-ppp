@@ -1,12 +1,7 @@
 FROM bisdn/accel-pppd-base
 
+WORKDIR /opt/accel-ppp/build
 RUN set -x \
-    && build_dir="/opt/accel-ppp" \
-    && mkdir "$build_dir" \
-    && cd "$build_dir" \
-    && git clone https://github.com/dpdk-vbng-cp/accel-ppp.git . \
-    && mkdir "$build_dir/build" \
-    && cd "build" \
     && cmake -DRADIUS=TRUE -DNETSNMP=TRUE -DLUA=TRUE .. \
     && make \
     && make install
