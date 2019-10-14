@@ -16,13 +16,8 @@ ENV KERNEL_VERSION=$KERNEL_VERSION \
     LOAD_KMOD=ipoe\ vlan_mon
 
 
+WORKDIR /opt/accel-ppp/build
 RUN set -x \
-    && build_dir="/opt/accel-ppp" \
-    && mkdir "$build_dir" \
-    && cd "$build_dir" \
-    && git clone https://github.com/dpdk-vbng-cp/accel-ppp.git . \
-    && mkdir "$build_dir/build" \
-    && cd "build" \
     && cmake -DBUILD_PPTP_DRIVER=$BUILD_PPTP_DRIVER -DBUILD_IPOE_DRIVER=$BUILD_IPOE_DRIVER -DBUILD_VLAN_MON_DRIVER=$BUILD_VLAN_MON_DRIVER -DKDIR=$KDIR .. \
     && if [ "$BUILD_PPTP_DRIVER" = "TRUE" ]; then cd "$build_dir/build/drivers/pptp"; make; fi \
     && if [ "$BUILD_IPOE_DRIVER" = "TRUE" ]; then cd "$build_dir/build/drivers/ipoe"; make; fi \
