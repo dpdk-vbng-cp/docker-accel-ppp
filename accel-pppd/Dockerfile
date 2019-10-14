@@ -1,4 +1,4 @@
-FROM bisdn:accel-pppd-base
+FROM bisdn/accel-pppd-base
 
 RUN set -x \
     && build_dir="/opt/accel-ppp" \
