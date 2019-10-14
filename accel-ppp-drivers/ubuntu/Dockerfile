@@ -1,5 +1,4 @@
-ARG UBUNTU_VERSION=18.04
-FROM ubuntu:$UBUNTU_VERSION
+FROM bisdn/accel-ppp-drivers-base
 
 COPY load_kernel_modules.sh /usr/local/bin/
 
@@ -18,8 +17,6 @@ ENV KERNEL_VERSION=$KERNEL_VERSION \
 
 
 RUN set -x \
-    && apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y apt-utils ca-certificates git build-essential cmake libpcre3-dev libssl-dev pkg-config libhiredis-dev libjson-c-dev linux-headers-$KERNEL_VERSION libelf-dev \
     && build_dir="/opt/accel-ppp" \
     && mkdir "$build_dir" \
     && cd "$build_dir" \
