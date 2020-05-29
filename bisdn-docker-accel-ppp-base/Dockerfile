@@ -8,5 +8,5 @@ RUN set -x \
     && build_dir="/opt/accel-ppp" \
     && mkdir "$build_dir" \
     && cd "$build_dir" \
-    && git clone https://github.com/dpdk-vbng-cp/accel-ppp.git . \
+    && git clone https://github.com/dpdk-vbng-cp/accel-ppp.git -b add-nas-identifier . \
     && mkdir "$build_dir/build"
