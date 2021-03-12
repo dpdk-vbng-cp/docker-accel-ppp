@@ -71,3 +71,16 @@ login to the vagrant machine with `kitchen login` and run the pppoe client:
 ```
 sudo pppd pty "/usr/sbin/pppoe -I docker0 -T 80 -U -m 1412" noccp ipparam vpeer-client-2 linkname docker0 noipdefault noauth default-asyncmap defaultroute hide-password updetach mtu 1492 mru 1492 noaccomp nodeflate nopcomp novj novjccomp lcp-echo-interval 40 lcp-echo-failure 3 user intel
 ```
+
+## Instructions to build and run accel-ppp with vlan_mon
+
+1. Clone this branch of the repo
+2. cd bisdn-docker-accel-ppp-base/
+3. docker build -f Dockerfile . -t bisdn/accel-pppd-base:testing
+4. cd ../accel-pppd/
+5. docker build -f Dockerfile . -t <image_name>
+6. docker run --name <container_name> --cap-add=NET_ADMIN --cap-add=SYS_ADMIN -d --device /dev/ppp:/dev/ppp -v /sbin/modprobe:/sbin/modprobe -v /lib/modules:/lib/modules -v /sys/module:/sys/module <image_name> 
+
+###NOTE: At present accel-ppp vlan_mon moudle is not functional inside the container. The only way to run vlan_mon in a container is to provide the host network namespace.
+
+7. docker run --name <container_name> --cap-add=NET_ADMIN --cap-add=SYS_ADMIN --net=host -d --device /dev/ppp:/dev/ppp -v /sbin/modprobe:/sbin/modprobe -v /lib/modules:/lib/modules -v /sys/module:/sys/module <image_name>
